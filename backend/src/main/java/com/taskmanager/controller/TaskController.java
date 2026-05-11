@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/TMS/tasks")
 public class TaskController {
 
     @Autowired
