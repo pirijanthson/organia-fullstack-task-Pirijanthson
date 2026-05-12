@@ -6,15 +6,16 @@ import AddTask from "./pages/AddTask/AddTask";
 import Profile from "./pages/Profile/Profile";
 import SpecialNotes from "./pages/SpecialNotes/SpecialNotes";
 import AddNote from "./pages/AddNote/AddNote";
-import MainLayout from "./components/Layout/MainLayout";
+import ErrorPage from "./pages/Error/Error";
+import MainLayout from "./components/Layout/MainLayout/MainLayout";
 
 // Admin Pages
-import AdminLogin from "./pages/Admin/AdminLogin";
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-import AdminUserDetails from "./pages/Admin/AdminUserDetails";
-import AdminCreateTask from "./pages/Admin/AdminCreateTask";
-import AdminFeedback from "./pages/Admin/AdminFeedback";
-import AdminNotes from "./pages/Admin/AdminNotes";
+import AdminLogin from "./pages/Admin/AdminLogin/AdminLogin";
+import AdminDashboard from "./pages/Admin/AdminDashboard/AdminDashboard";
+import AdminUserDetails from "./pages/Admin/AdminUserDetails/AdminUserDetails";
+import AdminCreateTask from "./pages/Admin/AdminCreateTask/AdminCreateTask";
+import AdminFeedback from "./pages/Admin/AdminFeedback/AdminFeedback";
+import AdminNotes from "./pages/Admin/AdminNotes/AdminNotes";
 import AdminProtectedRoute from "./components/Auth/AdminProtectedRoute";
 
 const ProtectedRoute = ({ children }) => {
@@ -46,6 +47,7 @@ function App() {
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/error" element={<ErrorPage />} />
         <Route
           path="/admin/dashboard"
           element={

@@ -1,0 +1,182 @@
+/* Metric Card Container */
+.metric-card {
+  position: relative;
+  padding: 2rem;
+  border-radius: 2rem;
+  color: white;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Dark mode border */
+.dark .metric-card {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Hover effects */
+.metric-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
+}
+
+/* Decorative Glow */
+.card-glow {
+  position: absolute;
+  right: -2.5rem;
+  bottom: -2.5rem;
+  width: 10rem;
+  height: 10rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  filter: blur(3rem);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+
+.metric-card:hover .card-glow {
+  transform: scale(1.5);
+}
+
+/* Card Icon */
+.card-icon {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  opacity: 0.1;
+  transition: all 0.7s ease;
+  pointer-events: none;
+}
+
+.metric-card:hover .card-icon {
+  transform: rotate(12deg) scale(1.25);
+}
+
+.icon-svg {
+  width: 7rem;
+  height: 7rem;
+}
+
+/* Card Content */
+.card-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Card Title */
+.card-title {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+/* Card Value */
+.card-value {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Card Footer */
+.card-footer {
+  padding-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.footer-line {
+  width: 2rem;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-to-br {
+  background-size: 200% 200%;
+}
+
+/* Different color variants - use these classes */
+.from-indigo-600 {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.from-purple-600 {
+  background: linear-gradient(135deg, #9333ea 0%, #db2777 100%);
+}
+
+.from-blue-600 {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+}
+
+.from-green-600 {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+}
+
+.from-yellow-600 {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+}
+
+.from-red-600 {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+}
+
+.from-pink-600 {
+  background: linear-gradient(135deg, #db2777 0%, #ec4899 100%);
+}
+
+.from-orange-600 {
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .metric-card {
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+  }
+
+  .card-value {
+    font-size: 2.5rem;
+  }
+
+  .icon-svg {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .card-title {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .metric-card {
+    padding: 1.25rem;
+  }
+
+  .card-value {
+    font-size: 2rem;
+  }
+
+  .icon-svg {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .card-footer {
+    font-size: 0.7rem;
+  }
+}

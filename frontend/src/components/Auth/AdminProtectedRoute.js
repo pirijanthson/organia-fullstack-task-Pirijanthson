@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import AdminLayout from '../Layout/AdminLayout';
+import AdminLayout from '../Layout/AdminLayout/AdminLayout';
 
 const AdminProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");

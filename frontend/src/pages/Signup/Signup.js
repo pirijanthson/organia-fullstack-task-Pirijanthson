@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Api from "../../api/axiosConfig";
+import "./Signup.css";
 
 function Signup() {
   const [username, setUsername] = useState("");
@@ -9,116 +10,174 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [rePassword, setRePassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRePassword, setShowRePassword] = useState(false);
   const navigate = useNavigate();
+
+  // Simple validation
+  const [touched, setTouched] = useState({});
+
+  const validateField = (field, value) => {
+    switch (field) {
+      case "username":
+        return value.length >= 3 ? "" : "Min 3 characters";
+      case "email":
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : "Invalid email";
+      case "phone":
+        return value.length >= 10 ? "" : "Min 10 digits";
+      case "password":
+        return value.length >= 6 ? "" : "Min 6 characters";
+      case "rePassword":
+        return value === password ? "" : "Passwords don't match";
+      default:
+        return "";
+    }
+  };
+
+  const getFieldError = (field) => {
+    const value = { username, email, phone, password, rePassword }[field];
+    return touched[field] ? validateField(field, value) : "";
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (password !== rePassword) {
-      setError("Passwords do not match.");
+    const allTouched = { username: true, email: true, phone: true, password: true, rePassword: true };
+    setTouched(allTouched);
+
+    const errors = {
+      username: validateField("username", username),
+      email: validateField("email", email),
+      phone: validateField("phone", phone),
+      password: validateField("password", password),
+      rePassword: validateField("rePassword", rePassword),
+    };
+
+    if (Object.values(errors).some(error => error)) {
+      setError("Please fix the errors");
       return;
     }
 
+    setLoading(true);
     try {
       await Api.post("/auth/register", { username, email, phone, password });
-      navigate("/");
+      navigate("/", { state: { message: "Account created! Please login." } });
     } catch (error) {
-      console.error("Signup failed:", error);
-      const message = error.response?.data || "Registration failed. Please try again.";
+      const message = error.response?.data?.message || error.response?.data || "Registration failed";
       setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-100 p-4">
-      <div className="glass p-8 rounded-2xl w-full max-w-md my-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">Create Account</h2>
-          <p className="text-sm text-slate-500">Join us to start managing tasks</p>
+    <div className="signup-container">
+      <div className="signup-card">
+        <div className="signup-brand">
+          <div className="brand-icon">📋</div>
+          <h2>TaskFlow</h2>
+          <p>Manage tasks efficiently</p>
         </div>
 
-        {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-6 text-center">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="Username"
-              required
-            />
+        <div className="signup-form-wrapper">
+          <div className="form-header">
+            <h3>Create account</h3>
+            <p>Get started for free</p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="you@example.com"
-              required
-            />
+          {error && (
+            <div className="error-alert">
+              ⚠️ {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onBlur={() => setTouched({ ...touched, username: true })}
+                className={`input-field ${getFieldError("username") ? "error" : ""}`}
+                placeholder="Username"
+                required
+              />
+              {getFieldError("username") && <span className="error-text">{getFieldError("username")}</span>}
+            </div>
+
+            <div className="input-group">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setTouched({ ...touched, email: true })}
+                className={`input-field ${getFieldError("email") ? "error" : ""}`}
+                placeholder="Email address"
+                required
+              />
+              {getFieldError("email") && <span className="error-text">{getFieldError("email")}</span>}
+            </div>
+
+            <div className="input-group">
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onBlur={() => setTouched({ ...touched, phone: true })}
+                className={`input-field ${getFieldError("phone") ? "error" : ""}`}
+                placeholder="Phone number"
+                required
+              />
+              {getFieldError("phone") && <span className="error-text">{getFieldError("phone")}</span>}
+            </div>
+
+            <div className="input-group">
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => setTouched({ ...touched, password: true })}
+                  className={`input-field ${getFieldError("password") ? "error" : ""}`}
+                  placeholder="Password"
+                  required
+                />
+                <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? "👁️" : "🔒"}
+                </button>
+              </div>
+              {getFieldError("password") && <span className="error-text">{getFieldError("password")}</span>}
+            </div>
+
+            <div className="input-group">
+              <div className="password-wrapper">
+                <input
+                  type={showRePassword ? "text" : "password"}
+                  value={rePassword}
+                  onChange={(e) => setRePassword(e.target.value)}
+                  onBlur={() => setTouched({ ...touched, rePassword: true })}
+                  className={`input-field ${getFieldError("rePassword") ? "error" : ""}`}
+                  placeholder="Confirm password"
+                  required
+                />
+                <button type="button" className="password-toggle" onClick={() => setShowRePassword(!showRePassword)}>
+                  {showRePassword ? "👁️" : "🔒"}
+                </button>
+              </div>
+              {getFieldError("rePassword") && <span className="error-text">{getFieldError("rePassword")}</span>}
+            </div>
+
+            <button type="submit" className="signup-btn" disabled={loading}>
+              {loading ? "Creating..." : "Sign Up"}
+            </button>
+          </form>
+
+          <div className="form-footer">
+            Already have an account? <Link to="/">Sign in</Link>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="e.g. +1 234 567 890"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Confirm Password</label>
-            <input
-              type="password"
-              value={rePassword}
-              onChange={(e) => setRePassword(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-purple-700 transition-colors shadow-lg hover:shadow-purple-500/30 mt-4"
-          >
-            Sign Up
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Already have an account?{" "}
-          <Link to="/" className="font-semibold text-purple-600 hover:text-purple-800 transition-colors">
-            Sign in
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );

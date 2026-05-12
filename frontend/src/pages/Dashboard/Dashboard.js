@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTasks, deleteTask } from "../../services/taskService";
-import DashboardHeader from "../../components/Dashboard/DashboardHeader";
-import MetricsGrid from "../../components/Dashboard/MetricsGrid";
-import TaskListItem from "../../components/Dashboard/TaskListItem";
-import TimeCard from "../../components/Dashboard/TimeCard";
+import DashboardHeader from "../../components/Dashboard/DashboardHeader/DashboardHeader";
+import MetricsGrid from "../../components/Dashboard/MetricsGrid/MetricsGrid";
+import TaskListItem from "../../components/Dashboard/TaskListItem/TaskListItem";
+import TimeCard from "../../components/Dashboard/TimeCard/TimeCard";
+import "./Dashboard.css";
 
 const TASKS_PER_PAGE = 6;
 
@@ -51,7 +52,6 @@ function Dashboard() {
     if (storedUser) setUsername(storedUser);
   }, [fetchTasks]);
 
-  // Reset pagination when search or filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
@@ -71,7 +71,6 @@ function Dashboard() {
     });
   }, [tasks, search, statusFilter]);
 
-  // Pagination Logic
   const totalPages = Math.ceil(filteredTasks.length / TASKS_PER_PAGE);
   const startIndex = (currentPage - 1) * TASKS_PER_PAGE;
   const paginatedTasks = filteredTasks.slice(startIndex, startIndex + TASKS_PER_PAGE);
@@ -83,67 +82,64 @@ function Dashboard() {
   };
 
   return (
-    <div className="space-y-12">
-      <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
-        <div className="flex-1 w-full">
-          <DashboardHeader 
-            username={username}
-            search={search}
-            setSearch={setSearch}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            onLogout={handleLogout}
-          />
+    <div className="dashboard">
+      <div className="dashboard-container">
+        {/* Header Section */}
+        <div className="dashboard-header-wrapper">
+          <div className="dashboard-header-left">
+            <DashboardHeader 
+              username={username}
+              search={search}
+              setSearch={setSearch}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              onLogout={handleLogout}
+            />
+          </div>
+          <div className="dashboard-header-right">
+            <TimeCard />
+          </div>
         </div>
-        <div className="animate-fadeIn mt-2 lg:mt-0">
-          <TimeCard />
-        </div>
-      </div>
 
-      <MetricsGrid tasks={tasks} />
+        {/* Metrics Grid */}
+        <MetricsGrid tasks={tasks} />
 
-      <section className="animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-        <div className="card-premium overflow-hidden">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
-            <div>
-              <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">Active Tasks</h2>
-              <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Manage and track your project progress.</p>
+        {/* Tasks Section */}
+        <div className="tasks-section">
+          <div className="tasks-header">
+            <div className="tasks-title">
+              <h2>Active Tasks</h2>
+              <p>Manage and track your project progress</p>
             </div>
-            <div className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl font-bold text-sm border border-indigo-100 dark:border-indigo-800/50">
-              {filteredTasks.length} Tasks Total
+            <div className="tasks-count">
+              {filteredTasks.length} Tasks
             </div>
           </div>
-          
+
           {loading ? (
-            <div className="flex flex-col items-center justify-center p-20 gap-4">
-              <div className="animate-spin rounded-full h-14 w-14 border-[4px] border-indigo-600/20 border-t-indigo-600"></div>
-              <p className="text-slate-500 font-bold animate-pulse">Loading tasks...</p>
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>Loading tasks...</p>
             </div>
           ) : filteredTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-20 text-center space-y-6">
-              <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">All caught up!</p>
-                <p className="text-slate-500 dark:text-slate-400 mt-1 max-w-sm">No tasks found matching your filters. Try adjusting your search or add a new task.</p>
-              </div>
+            <div className="empty-state">
+              <div className="empty-icon">📋</div>
+              <h3>All caught up!</h3>
+              <p>No tasks found matching your filters.</p>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto -mx-8">
-                <table className="w-full text-left min-w-[700px]">
+              <div className="tasks-table-wrapper">
+                <table className="tasks-table">
                   <thead>
-                    <tr className="bg-slate-50/50 dark:bg-slate-800/30 text-slate-400 dark:text-slate-500 text-xs uppercase tracking-[0.2em]">
-                      <th className="px-10 py-5 font-bold">Task Information</th>
-                      <th className="px-8 py-5 font-bold">Priority Status</th>
-                      <th className="px-8 py-5 font-bold">Timeline</th>
-                      <th className="px-10 py-5 font-bold text-right">Management</th>
+                    <tr>
+                      <th>Task Information</th>
+                      <th>Priority Status</th>
+                      <th>Timeline</th>
+                      <th>Management</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                  <tbody>
                     {paginatedTasks.map((task) => (
                       <TaskListItem 
                         key={task.id} 
@@ -155,83 +151,78 @@ function Dashboard() {
                 </table>
               </div>
 
-              {/* Enhanced Pagination Controls */}
+              {/* Pagination */}
               {filteredTasks.length > 0 && (
-                <div className="mt-12 flex flex-col lg:flex-row items-center justify-between gap-8 px-6 py-6 bg-slate-50/50 dark:bg-slate-800/20 rounded-[2rem] border border-slate-100 dark:border-slate-800/50">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-indigo-600/10 rounded-xl">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                      Showing <span className="text-slate-800 dark:text-white">{startIndex + 1}</span> - <span className="text-slate-800 dark:text-white">{Math.min(startIndex + TASKS_PER_PAGE, filteredTasks.length)}</span> of <span className="text-indigo-600 dark:text-indigo-400">{filteredTasks.length}</span> Records
+                <div className="pagination-wrapper">
+                  <div className="pagination-info">
+                    <div className="info-icon">📊</div>
+                    <p>
+                      Showing <span>{startIndex + 1}</span> - <span>{Math.min(startIndex + TASKS_PER_PAGE, filteredTasks.length)}</span> of <span>{filteredTasks.length}</span> Records
                     </p>
                   </div>
                   
-                  <div className="flex flex-wrap items-center justify-center gap-3">
-                    {/* First Page */}
+                  <div className="pagination-controls">
                     <button 
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      className="group flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 hover:border-indigo-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                      className="page-btn"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                      </svg>
-                      <span className="hidden sm:inline">First</span>
+                      « First
                     </button>
 
-                    {/* Previous */}
                     <button 
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
-                      className="group flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 hover:border-indigo-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                      className="page-btn"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      <span className="hidden sm:inline">Prev</span>
+                      ‹ Prev
                     </button>
 
-                    <div className="flex items-center gap-1.5 px-2">
-                      {[...Array(totalPages)].map((_, i) => (
+                    <div className="page-numbers">
+                      {[...Array(totalPages)].slice(0, 5).map((_, i) => {
+                        let pageNum = i + 1;
+                        if (totalPages > 5 && currentPage > 3) {
+                          pageNum = currentPage - 3 + i;
+                          if (pageNum > totalPages) return null;
+                        }
+                        if (pageNum <= totalPages) {
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        }
+                        return null;
+                      })}
+                      {totalPages > 5 && currentPage < totalPages - 2 && <span>...</span>}
+                      {totalPages > 5 && currentPage < totalPages - 2 && (
                         <button
-                          key={i + 1}
-                          onClick={() => setCurrentPage(i + 1)}
-                          className={`w-10 h-10 rounded-xl font-black text-xs transition-all duration-300 ${
-                            currentPage === i + 1
-                              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/40 scale-110 z-10"
-                              : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:text-indigo-600 hover:border-indigo-500 shadow-sm"
-                          }`}
+                          onClick={() => setCurrentPage(totalPages)}
+                          className="page-number"
                         >
-                          {i + 1}
+                          {totalPages}
                         </button>
-                      ))}
+                      )}
                     </div>
 
-                    {/* Next */}
                     <button 
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages}
-                      className="group flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 hover:border-indigo-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                      className="page-btn"
                     >
-                      <span className="hidden sm:inline">Next</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      Next ›
                     </button>
 
-                    {/* Last Page */}
                     <button 
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="group flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 hover:border-indigo-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                      className="page-btn"
                     >
-                      <span className="hidden sm:inline">Last</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                      </svg>
+                      Last »
                     </button>
                   </div>
                 </div>
@@ -239,7 +230,7 @@ function Dashboard() {
             </>
           )}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

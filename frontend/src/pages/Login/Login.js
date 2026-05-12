@@ -1,89 +1,150 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Api from "../../api/axiosConfig";
+import "./Login.css";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
   const navigate = useNavigate();
+
+  // Load saved email if remember me was checked
+  useState(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    try {
-      const response = await Api.post("/auth/login", { email, password });
-      const { token, username, role, userId } = response.data;
 
-      if (role === 'ADMIN') {
-        setError("Administrative access required. Please use the Admin Login terminal.");
-        return;
-      }
+    // If email is admin@gmail.com -> show error page
+    if (email.trim().toLowerCase() === "admin@gmail.com") {
+      navigate("/error");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await Api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      const { token, username } = response.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("username", username);
-      localStorage.setItem("role", role);
-      localStorage.setItem("userId", userId);
+
+      // Handle remember me
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
+
+      // Go to dashboard
       navigate("/dashboard");
+
     } catch (error) {
       console.error("Login failed:", error);
-      setError("Login failed. Please check your credentials.");
+      setError(error.response?.data?.message || "Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100 p-4">
-      <div className="glass p-8 rounded-2xl w-full max-w-md">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">Welcome Back</h2>
-          <p className="text-sm text-slate-500">Please enter your details to sign in</p>
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-brand">
+          <div className="brand-icon">✅</div>
+          <h2>TaskFlow</h2>
+          <p>Task Management System</p>
         </div>
-        
-        {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-6 text-center">
-            {error}
-          </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-              placeholder="••••••••"
-              required
-            />
+        <div className="login-form-wrapper">
+          <div className="form-header">
+            <h3>Welcome back</h3>
+            <p>Sign in to continue</p>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-indigo-500/30"
-          >
-            Sign In
-          </button>
-        </form>
+          {error && (
+            <div className="error-alert">
+              ⚠️ {error}
+            </div>
+          )}
 
-        <p className="mt-8 text-center text-sm text-slate-600">
-          Don't have an account?{" "}
-          <Link to="/signup" className="font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
-            Sign up
-          </Link>
-        </p>
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input-field"
+                placeholder="Email address"
+                required
+                autoFocus
+              />
+            </div>
+
+            <div className="input-group">
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-field"
+                  placeholder="Password"
+                  required
+                />
+                <button 
+                  type="button" 
+                  className="password-toggle" 
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? "👁️" : "🔒"}
+                </button>
+              </div>
+            </div>
+
+            <div className="options-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span>Remember me</span>
+              </label>
+            </div>
+
+            <button type="submit" className="login-btn" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
+            </button>
+          </form>
+
+          <div className="form-footer">
+            Don't have an account? <Link to="/signup">Sign up</Link>
+          </div>
+
+          <div className="demo-credentials">
+            <p className="demo-title">Demo Credentials:</p>
+            <div className="demo-items">
+              <span>user@example.com</span>
+              <span>password123</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

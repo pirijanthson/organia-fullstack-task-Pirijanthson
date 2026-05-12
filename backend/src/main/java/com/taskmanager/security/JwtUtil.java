@@ -12,7 +12,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "TaskManagerSecretKeyForJWTGeneration12345"; // Use a strong key in production
+    private final String SECRET_KEY = "TaskManagerSecretKeyForJWTGeneration12345";
     private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
     private Key getSigKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());

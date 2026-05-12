@@ -2,25 +2,25 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getNotes, deleteNote } from '../../services/noteService';
 import { getTasks } from '../../services/taskService';
+import './SpecialNotes.css';
 
 function SpecialNotes() {
   const [notes, setNotes] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModal, setDeleteModal] = useState({ show: false, noteId: null });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTask, setSelectedTask] = useState('');
   const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const userId = localStorage.getItem('userId'); // Assuming userId is stored in localStorage
+      const userId = localStorage.getItem('userId');
       const username = localStorage.getItem('username');
       
-      // We might need to fetch the actual userId from the backend if it's not in localStorage
-      // For now, let's assume we can get it or we'll need to update the login flow.
-      // Looking at the Task entity, it uses userId.
-      
       const [notesData, tasksData] = await Promise.all([
-        getNotes(userId || 1), // Fallback to 1 for testing if needed
+        getNotes(userId || 1),
         getTasks()
       ]);
       
@@ -37,10 +37,11 @@ function SpecialNotes() {
     fetchData();
   }, [fetchData]);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
+  const handleDelete = async () => {
+    if (deleteModal.noteId) {
       try {
-        await deleteNote(id);
+        await deleteNote(deleteModal.noteId);
+        setDeleteModal({ show: false, noteId: null });
         fetchData();
       } catch (error) {
         console.error('Error deleting note:', error);
@@ -53,103 +54,195 @@ function SpecialNotes() {
     return task ? task.title : 'General Note';
   };
 
+  const filteredNotes = notes.filter(note => {
+    const matchesSearch = note.heading.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         note.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTask = selectedTask ? note.taskId === parseInt(selectedTask) : true;
+    return matchesSearch && matchesTask;
+  });
+
   return (
-    <div className="space-y-10 animate-fadeIn">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h2 className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.3em] mb-2">Documentation</h2>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-800 dark:text-white tracking-tighter">
-            Special <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Notes</span>
+    <div className="special-notes-container">
+      {/* Header Section */}
+      <div className="notes-header">
+        <div className="header-left">
+          <div className="header-badge">
+            <span className="badge-icon">📝</span>
+            <span>Documentation</span>
+          </div>
+          <h1 className="page-title">
+            Special <span className="gradient-text">Notes</span>
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Manage your task-related records and insights.</p>
+          <p className="page-description">
+            Manage your task-related records and insights.
+          </p>
         </div>
         <button
           onClick={() => navigate('/add-note')}
-          className="btn-primary flex items-center gap-2 group"
+          className="compose-btn"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Compose Note
         </button>
       </div>
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center p-20 gap-4">
-          <div className="animate-spin rounded-full h-14 w-14 border-[4px] border-indigo-600/20 border-t-indigo-600"></div>
-          <p className="text-slate-500 font-bold animate-pulse">Synchronizing notes...</p>
+      {/* Search & Filter Section */}
+      <div className="notes-filters">
+        <div className="search-wrapper">
+          <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search notes by title or description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          {searchTerm && (
+            <button className="clear-search" onClick={() => setSearchTerm('')}>✕</button>
+          )}
         </div>
-      ) : notes.length === 0 ? (
-        <div className="card-premium p-20 text-center flex flex-col items-center gap-6">
-          <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] flex items-center justify-center border border-slate-100 dark:border-slate-800">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-2xl font-bold text-slate-800 dark:text-white">Empty Archive</h3>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 max-w-sm mx-auto">You haven't created any special notes yet. Start documenting your progress today.</p>
-          </div>
-          <button onClick={() => navigate('/add-note')} className="text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-widest text-sm hover:underline">Create your first note</button>
+
+        <div className="filter-wrapper">
+          <select
+            value={selectedTask}
+            onChange={(e) => setSelectedTask(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">All Tasks</option>
+            <option value="general">General Notes</option>
+            {tasks.map(task => (
+              <option key={task.id} value={task.id}>{task.title}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading ? (
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Synchronizing notes...</p>
+        </div>
+      ) : filteredNotes.length === 0 ? (
+        /* Empty State */
+        <div className="empty-state">
+          <div className="empty-icon">📋</div>
+          <h3>Empty Archive</h3>
+          <p>You haven't created any special notes yet. Start documenting your progress today.</p>
+          <button onClick={() => navigate('/add-note')} className="empty-action-btn">
+            Create your first note
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {notes.map((note) => (
-            <div key={note.id} className="card-premium group hover:scale-[1.02] transition-all duration-500 relative overflow-hidden flex flex-col">
-              {/* Decorative side accent */}
-              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-600 to-purple-600 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+        /* Notes Grid */
+        <div className="notes-grid">
+          {filteredNotes.map((note, index) => (
+            <div key={note.id} className="note-card" style={{ animationDelay: `${index * 0.05}s` }}>
+              {/* Card Background Decor */}
+              <div className="card-accent"></div>
               
-              <div className="flex justify-between items-start mb-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50">
-                      {getTaskTitle(note.taskId)}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400 italic">
-                      {new Date(note.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    {note.heading}
-                  </h3>
+              {/* Card Header */}
+              <div className="note-card-header">
+                <div className="note-meta">
+                  <span className="task-badge">
+                    {getTaskTitle(note.taskId)}
+                  </span>
+                  <span className="date-badge">
+                    <svg className="date-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {new Date(note.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
                 </div>
-                <div className="flex gap-2">
+                
+                <div className="card-actions">
                   <button 
                     onClick={() => navigate(`/edit-note/${note.id}`, { state: { note } })}
-                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all"
+                    className="action-btn edit-action"
+                    title="Edit Note"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
                   <button 
-                    onClick={() => handleDelete(note.id)}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all"
+                    onClick={() => setDeleteModal({ show: true, noteId: note.id })}
+                    className="action-btn delete-action"
+                    title="Delete Note"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
               </div>
 
+              {/* Note Title */}
+              <h3 className="note-title">{note.heading}</h3>
+
+              {/* Subheadings */}
               {note.subHeadings && note.subHeadings.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {note.subHeadings.map((sub, i) => (
-                    <span key={i} className="px-3 py-1 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700">
+                <div className="subheadings-list">
+                  {note.subHeadings.slice(0, 3).map((sub, i) => (
+                    <span key={i} className="subheading-tag">
                       {sub}
                     </span>
                   ))}
+                  {note.subHeadings.length > 3 && (
+                    <span className="subheading-more">+{note.subHeadings.length - 3} more</span>
+                  )}
                 </div>
               )}
 
-              <div className="bg-slate-50/50 dark:bg-slate-800/30 p-6 rounded-2xl border border-slate-100 dark:border-slate-800/50 flex-1">
-                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap italic">
+              {/* Description */}
+              <div className="note-description">
+                <p>
                   {note.description || 'No detailed description provided.'}
                 </p>
               </div>
+
+              {/* Card Footer */}
+              <div className="note-card-footer">
+                <div className="footer-line"></div>
+                <span className="footer-text">Last updated</span>
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.show && (
+        <div className="modal-overlay" onClick={() => setDeleteModal({ show: false, noteId: null })}>
+          <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-icon delete-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 className="modal-title">Delete Note?</h3>
+            <p className="modal-message">
+              Are you sure you want to delete this note? This action cannot be undone.
+            </p>
+            <div className="modal-actions">
+              <button 
+                onClick={() => setDeleteModal({ show: false, noteId: null })}
+                className="modal-cancel-btn"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDelete}
+                className="modal-delete-btn"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
