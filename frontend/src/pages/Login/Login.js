@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import Api from "../api/axiosConfig";
+import Api from "../../api/axiosConfig";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -13,9 +13,17 @@ function Login() {
     setError("");
     try {
       const response = await Api.post("/auth/login", { email, password });
-      const { token, username } = response.data;
+      const { token, username, role, userId } = response.data;
+
+      if (role === 'ADMIN') {
+        setError("Administrative access required. Please use the Admin Login terminal.");
+        return;
+      }
+
       localStorage.setItem("token", token);
       localStorage.setItem("username", username);
+      localStorage.setItem("role", role);
+      localStorage.setItem("userId", userId);
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);

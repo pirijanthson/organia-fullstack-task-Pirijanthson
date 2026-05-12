@@ -66,6 +66,6 @@ public class TaskController {
     public ResponseEntity<List<Task>> getTasksBySearch(@RequestParam String param) {
         return ResponseEntity.ok(taskService.getTasksBySearch(param));
     }
+
     
-     
 }

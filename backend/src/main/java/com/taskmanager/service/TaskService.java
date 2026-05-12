@@ -31,7 +31,9 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("Task not found"));
         task.setTitle(updatedTask.getTitle());
         task.setDescription(updatedTask.getDescription());
+        task.setStatus(updatedTask.getStatus());
         task.setDueDate(updatedTask.getDueDate());
+        task.setFeedback(updatedTask.getFeedback());
 
         return taskRepository.save(task);
     }

@@ -42,6 +42,10 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
+        if (userRepository.count() == 0) {
+            user.setRole("ADMIN");
+        }
+
         userRepository.save(user);
 
         return "User registered successfully";
@@ -59,6 +63,11 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(user.getEmail());
 
-        return new AuthResponse(token, user.getUsername());
+        return new AuthResponse(token, user.getUsername(), user.getId(), user.getRole());
+    }
+
+    public User getUserProfile(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

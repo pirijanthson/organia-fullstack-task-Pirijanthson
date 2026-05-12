@@ -29,4 +29,8 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<com.taskmanager.model.User> getProfile(java.security.Principal principal) {
+        return ResponseEntity.ok(authService.getUserProfile(principal.getName()));
+    }
 }

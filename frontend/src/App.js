@@ -1,15 +1,40 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import Login from "./pages/Login/Login";
+import Signup from "./pages/Signup/Signup";
+import Dashboard from "./pages/Dashboard/Dashboard";
 import AddTask from "./pages/AddTask/AddTask";
+import Profile from "./pages/Profile/Profile";
+import SpecialNotes from "./pages/SpecialNotes/SpecialNotes";
+import AddNote from "./pages/AddNote/AddNote";
+import MainLayout from "./components/Layout/MainLayout";
+
+// Admin Pages
+import AdminLogin from "./pages/Admin/AdminLogin";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminUserDetails from "./pages/Admin/AdminUserDetails";
+import AdminCreateTask from "./pages/Admin/AdminCreateTask";
+import AdminFeedback from "./pages/Admin/AdminFeedback";
+import AdminNotes from "./pages/Admin/AdminNotes";
+import AdminProtectedRoute from "./components/Auth/AdminProtectedRoute";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
+  };
+
   if (!token) {
     return <Navigate to="/" replace />;
   }
-  return children;
+
+  return (
+    <MainLayout onLogout={handleLogout}>
+      {children}
+    </MainLayout>
+  );
 };
 
 function App() {
@@ -18,6 +43,57 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminProtectedRoute>
+              <AdminUserDetails />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/create-task"
+          element={
+            <AdminProtectedRoute>
+              <AdminCreateTask />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/edit-task/:id"
+          element={
+            <AdminProtectedRoute>
+              <AdminCreateTask />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/feedback"
+          element={
+            <AdminProtectedRoute>
+              <AdminFeedback />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/notes"
+          element={
+            <AdminProtectedRoute>
+              <AdminNotes />
+            </AdminProtectedRoute>
+          }
+        />
 
         <Route
           path="/dashboard"
@@ -42,6 +118,42 @@ function App() {
           element={
             <ProtectedRoute>
               <AddTask />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/notes"
+          element={
+            <ProtectedRoute>
+              <SpecialNotes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/add-note"
+          element={
+            <ProtectedRoute>
+              <AddNote />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/edit-note/:id"
+          element={
+            <ProtectedRoute>
+              <AddNote />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

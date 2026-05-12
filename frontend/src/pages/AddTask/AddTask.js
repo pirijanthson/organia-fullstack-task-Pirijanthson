@@ -7,8 +7,11 @@ function AddTask() {
   const isEditMode = !!id;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("To Do");
+  const [status, setStatus] = useState("TODO");
+  const [originalStatus, setOriginalStatus] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
@@ -21,7 +24,9 @@ function AddTask() {
           setTitle(task.title);
           setDescription(task.description);
           setStatus(task.status);
+          setOriginalStatus(task.status);
           setDueDate(task.dueDate || "");
+          setFeedback(task.feedback || "");
         } catch (error) {
           console.error("Error fetching task:", error);
         }
@@ -32,8 +37,25 @@ function AddTask() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // If status changed to DONE, show feedback modal
+    if (isEditMode && status === "DONE" && originalStatus !== "DONE") {
+      setShowFeedbackModal(true);
+      return;
+    }
+    
+    saveTask();
+  };
+
+  const saveTask = async (finalFeedback = feedback) => {
     setSubmitting(true);
-    const taskData = { title, description, status, dueDate };
+    const taskData = { 
+      title, 
+      description, 
+      status, 
+      dueDate,
+      feedback: finalFeedback 
+    };
     try {
       if (isEditMode) {
         await updateTask(id, taskData);
@@ -47,99 +69,168 @@ function AddTask() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Decorative background blurs */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-indigo-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+  const handleFeedbackSubmit = (e) => {
+    e.preventDefault();
+    setShowFeedbackModal(false);
+    saveTask();
+  };
 
-      <div className="w-full max-w-2xl relative z-10">
-        <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 mb-6 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  return (
+    <div className="w-full max-w-3xl mx-auto py-4 md:py-8 space-y-6 animate-fadeIn">
+      <Link to="/dashboard" className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors group">
+        <div className="p-2 rounded-lg group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-all mr-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Dashboard
-        </Link>
+        </div>
+        Back to Dashboard
+      </Link>
 
-        <form onSubmit={handleSubmit} className="glass p-8 md:p-10 rounded-2xl shadow-xl w-full">
-          <div className="mb-8 border-b border-slate-100 pb-6">
-            <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-              {isEditMode ? "Edit Task" : "Create New Task"}
-            </h2>
-            <p className="text-slate-500 mt-2 text-sm md:text-base">
-              {isEditMode ? "Update the details of your task." : "Fill out the details below to add a new task to your dashboard."}
-            </p>
-          </div>
+      <div className="glass p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl -ml-16 -mb-16"></div>
 
+        <div className="mb-10 border-b border-slate-100 dark:border-slate-800 pb-8 relative z-10">
+          <h2 className="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
+            {isEditMode ? "Edit Task" : "Create Task"}
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-3 text-lg">
+            {isEditMode ? "Modify your task details below." : "Organize your workflow by adding a new task."}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Task Title</label>
-              <input
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white/70"
-                placeholder="e.g. Redesign Landing Page"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
+            <div className="space-y-2">
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Task Title</label>
+                 <input
+                   className="w-full px-5 py-4 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white font-semibold text-lg placeholder:text-slate-400 dark:placeholder:text-slate-500 disabled:opacity-70 disabled:cursor-not-allowed"
+                   placeholder="What needs to be done?"
+                   value={title}
+                   onChange={(e) => setTitle(e.target.value)}
+                   required
+                   disabled={isEditMode}
+                 />
+               </div>
+ 
+               <div className="space-y-2">
+                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Description</label>
+                 <textarea
+                   className="w-full px-5 py-4 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all h-32 resize-none text-slate-700 dark:text-slate-300 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 disabled:opacity-70 disabled:cursor-not-allowed"
+                   placeholder="Add more context to this task..."
+                   value={description}
+                   onChange={(e) => setDescription(e.target.value)}
+                   disabled={isEditMode}
+                 />
+               </div>
+ 
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="space-y-2">
+                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Current Status</label>
+                   <div className="relative">
+                     <select
+                       className="w-full px-5 py-4 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer transition-all text-slate-700 dark:text-slate-300 font-bold disabled:opacity-70 disabled:cursor-not-allowed"
+                       value={status}
+                       onChange={(e) => setStatus(e.target.value)}
+                       disabled={isEditMode && originalStatus === "DONE"}
+                     >
+                       {/* Rules implementation */}
+                       {(!isEditMode || originalStatus === "TODO") && <option value="TODO">🎯 To Do</option>}
+                       {(!isEditMode || originalStatus === "TODO" || originalStatus === "IN_PROGRESS") && <option value="IN_PROGRESS">⚡ In Progress</option>}
+                       {(!isEditMode || originalStatus === "IN_PROGRESS" || originalStatus === "DONE") && <option value="DONE">✅ Completed</option>}
+                     </select>
+                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                       </svg>
+                     </div>
+                   </div>
+                 </div>
+ 
+                 <div className="space-y-2">
+                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Target Date</label>
+                   <input
+                     type="date"
+                     className="w-full px-5 py-4 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-700 dark:text-slate-300 font-bold disabled:opacity-70 disabled:cursor-not-allowed"
+                     value={dueDate}
+                     onChange={(e) => setDueDate(e.target.value)}
+                     disabled={isEditMode}
+                   />
+                 </div>
+               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Description</label>
-              <textarea
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors h-32 resize-none bg-white/70"
-                placeholder="Add necessary details, links, or instructions..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Status</label>
-                <select
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white/70 appearance-none pointer-events-auto"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  style={{ backgroundImage: "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')", backgroundRepeat: "no-repeat", backgroundPosition: "right .7rem top 50%", backgroundSize: ".65rem auto" }}
-                >
-                  <option value="To Do">To Do</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Due Date</label>
-                <input
-                  type="date"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white/70"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="pt-6 mt-6 border-t border-slate-100 flex justify-end gap-4">
-              <button
-                type="button"
-                onClick={() => navigate("/dashboard")}
-                className="px-6 py-3 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
-                disabled={submitting}
-              >
-                Cancel
-              </button>
-              <button
-                disabled={submitting}
-                className="px-8 py-3 font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/30 shadow-indigo-500/20 flex items-center justify-center min-w-[140px]"
-              >
-                {submitting ? (
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                ) : isEditMode ? "Update details" : "Create Task"}
-              </button>
-            </div>
+          <div className="pt-8 flex flex-col md:flex-row justify-end gap-4">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="px-8 py-4 font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all"
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button
+              disabled={submitting}
+              className="btn-primary min-w-[200px] text-lg py-4"
+            >
+              {submitting ? (
+                <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              ) : isEditMode ? "Save Changes" : "Create Task"}
+            </button>
           </div>
         </form>
       </div>
+
+      {/* Feedback Modal */}
+      {showFeedbackModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden relative animate-scaleIn">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            
+            <div className="p-8 md:p-10 relative z-10">
+              <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-3xl flex items-center justify-center mb-6 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              
+              <div className="text-center mb-8">
+                <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Mission Accomplished!</h3>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Please share your feedback on this task before we archive it as completed.</p>
+              </div>
+              
+              <form onSubmit={handleFeedbackSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Your Feedback</label>
+                  <textarea
+                    required
+                    className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all h-32 resize-none text-slate-700 dark:text-slate-300 font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    placeholder="How did it go? Any challenges or wins?"
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                  />
+                </div>
+                
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowFeedbackModal(false)}
+                    className="flex-1 py-4 font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all"
+                  >
+                    Not Now
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 transition-all"
+                  >
+                    Submit Feedback
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

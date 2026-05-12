@@ -21,5 +21,6 @@ public class Task {
 
     private LocalDate dueDate; 
     private Long userId; 
+    private String feedback;
  
 }
