@@ -43,4 +43,23 @@ public class TaskService {
     public List<Task> getTasksByUser(Long userId) {
         return taskRepository.findByUserId(userId);
     }
+
+    public List<Task> getTasksByStatus(String status) {
+        return taskRepository.findAll().stream()
+                .filter(task -> task.getStatus().name().equalsIgnoreCase(status))
+                .toList();
+    }
+
+    public List<Task> getTasksByDueDate(String dueDate) {
+        return taskRepository.findAll().stream()
+                .filter(task -> task.getDueDate().equals(dueDate))
+                .toList();
+    }
+
+    public List<Task> getTasksBySearch(String param) {
+        return taskRepository.findAll().stream()
+                .filter(task -> task.getTitle().toLowerCase().contains(param.toLowerCase()) ||
+                                task.getDescription().toLowerCase().contains(param.toLowerCase()))
+                .toList();
+    }
 }

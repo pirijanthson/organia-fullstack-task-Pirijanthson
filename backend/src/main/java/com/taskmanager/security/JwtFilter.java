@@ -41,7 +41,12 @@ public class JwtFilter extends OncePerRequestFilter {
         // 1. Extract token from header
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            email = jwtUtil.extractEmail(token);
+            try {
+                email = jwtUtil.extractEmail(token);
+            } catch (Exception e) {
+                // Token is expired or invalid, just let it be null.
+                // Spring security will handle access denied for protected routes.
+            }
         }
 
         // 2. Validate token and authenticate user
