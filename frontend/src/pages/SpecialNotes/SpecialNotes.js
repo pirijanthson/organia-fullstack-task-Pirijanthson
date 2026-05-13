@@ -17,7 +17,6 @@ function SpecialNotes() {
     try {
       setLoading(true);
       const userId = localStorage.getItem('userId');
-      const username = localStorage.getItem('username');
       
       const [notesData, tasksData] = await Promise.all([
         getNotes(userId || 1),

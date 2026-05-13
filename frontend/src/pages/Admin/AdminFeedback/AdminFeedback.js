@@ -9,7 +9,6 @@ function AdminFeedback() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRating, setSelectedRating] = useState('all');
 
   useEffect(() => {
     const fetchData = async () => {

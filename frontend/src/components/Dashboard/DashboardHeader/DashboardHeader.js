@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './DashboardHeader.css';
 
 function DashboardHeader({ username, search, setSearch, statusFilter, setStatusFilter }) {
-  // Theme state
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
   // Get current time greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -12,39 +9,6 @@ function DashboardHeader({ username, search, setSearch, statusFilter, setStatusF
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
-
-  // Get current date formatted
-  const getCurrentDate = () => {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date().toLocaleDateString(undefined, options);
-  };
-
-  // Toggle theme function
-  const toggleTheme = () => {
-    const newTheme = !isDarkMode;
-    setIsDarkMode(newTheme);
-    if (newTheme) {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('theme', 'light');
-    }
-  };
-
-  // Check for saved theme preference on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-  }, []);
 
   return (
     <header className="dashboard-header">
