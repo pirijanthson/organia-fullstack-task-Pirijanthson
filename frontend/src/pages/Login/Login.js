@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Api from "../../api/axiosConfig";
 import "./Login.css";
+import logo from "../../asserts/logo.png";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -67,7 +68,9 @@ function Login() {
     <div className="login-container">
       <div className="login-card">
         <div className="login-brand">
-          <div className="brand-icon">✅</div>
+          <div className="brand-icon">
+            <img src={logo} alt="TaskFlow" />
+          </div>
           <h2>TaskFlow</h2>
           <p>Task Management System</p>
         </div>
