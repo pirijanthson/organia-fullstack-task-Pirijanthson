@@ -16,7 +16,7 @@ function AdminLogin() {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:8080/TMS/auth/login', {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/login`, {
         email,
         password
       });
@@ -50,7 +50,7 @@ function AdminLogin() {
       <div className="bg-blur blur-2"></div>
 
       <div className="login-wrapper">
-        <div className="login-card">
+        <div className="admin-login-card">
           <div className="login-header">
             <div className="logo-wrapper">
               <div className="logo-icon">

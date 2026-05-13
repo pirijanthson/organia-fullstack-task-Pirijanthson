@@ -239,7 +239,7 @@ function AddTask() {
                 </svg>
               </div>
               
-              <div className="modal-header">
+              <div className="task-modal-header">
                 <h3 className="modal-title">Mission Accomplished!</h3>
                 <p className="modal-subtitle">
                   Please share your feedback on this task before we archive it as completed.

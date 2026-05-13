@@ -83,7 +83,9 @@
 }
 
 /* Login Card */
-.login-card {
+.admin-login-card {
+  display: flex;
+  flex-direction: column;
   background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(10px);
   border-radius: 1.5rem;
@@ -93,7 +95,7 @@
   transition: all 0.3s ease;
 }
 
-.login-card:hover {
+.admin-login-card:hover {
   border-color: rgba(79, 70, 229, 0.4);
   box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.2);
 }

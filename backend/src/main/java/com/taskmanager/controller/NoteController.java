@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/TMS/notes")
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 public class NoteController {
     @Autowired
     private NoteService noteService;

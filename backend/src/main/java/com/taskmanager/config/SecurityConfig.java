@@ -26,7 +26,7 @@ public class SecurityConfig {
         http
                 .cors(c -> c.configurationSource(request -> {
                     org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
-                    config.setAllowedOrigins(java.util.List.of("http://localhost:3000", "http://127.0.0.1:3000"));
+                    // config.setAllowedOrigins(java.util.List.of("http://localhost:3000", "http://127.0.0.1:3000"));
                     config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(java.util.List.of("*"));
                     config.setAllowCredentials(true);
