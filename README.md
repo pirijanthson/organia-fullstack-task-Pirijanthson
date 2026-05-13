@@ -59,9 +59,9 @@ Users can manage their personal tasks and notes, while Administrators have acces
 
 ## 🔗 Live URLs (Local Development)
 
-*   **Frontend Application:*https://taskflow-pirijanthson.vercel.app/* ``
-*   **Frontend Admin Portal:*https://taskflow-pirijanthson.vercel.app/admin/login/* ``
-*   **Backend API Base URL:*https://localhost:8080/TMS/* ``
+*   **Frontend Application :**``https://taskflow-pirijanthson.vercel.app/* ``
+*   **Frontend Admin Portal :**``https://taskflow-pirijanthson.vercel.app/admin/login/* ``
+*   **Backend API Base URL :**``https://localhost:8080/TMS/*``
 
 ---
 
