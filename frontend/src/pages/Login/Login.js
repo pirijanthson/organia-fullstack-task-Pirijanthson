@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Api from "../../api/axiosConfig";
 import "./Login.css";
@@ -15,7 +15,7 @@ function Login() {
   const navigate = useNavigate();
 
   // Load saved email if remember me was checked
-  useState(() => {
+  useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
     if (savedEmail) {
       setEmail(savedEmail);
@@ -58,7 +58,8 @@ function Login() {
 
     } catch (error) {
       console.error("Login failed:", error);
-      setError(error.response?.data?.message || "Login failed. Please check your credentials.");
+      const backendMessage = error.response?.data?.message || error.response?.data;
+      setError(backendMessage || error.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
