@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const Api = axios.create({
-  baseURL: "http://localhost:8080/TMS",
+  baseURL: process.env.REACT_APP_BACKEND_URL,
   headers: {
     "Content-Type": "application/json",
   },

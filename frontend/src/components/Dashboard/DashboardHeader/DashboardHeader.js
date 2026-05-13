@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './DashboardHeader.css';
 
 function DashboardHeader({ username, search, setSearch, statusFilter, setStatusFilter }) {
+  // Theme state
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   // Get current time greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -16,6 +19,33 @@ function DashboardHeader({ username, search, setSearch, statusFilter, setStatusF
     return new Date().toLocaleDateString(undefined, options);
   };
 
+  // Toggle theme function
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    if (newTheme) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  // Check for saved theme preference on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      setIsDarkMode(true);
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  }, []);
+
   return (
     <header className="dashboard-header">
       {/* Top Bar with Date */}
@@ -27,8 +57,12 @@ function DashboardHeader({ username, search, setSearch, statusFilter, setStatusF
           <span>{getCurrentDate()}</span>
         </div>
         <div className="theme-toggle">
-          <button className="theme-toggle-btn" id="themeToggle">
-            🌙
+          <button 
+            className="theme-toggle-btn" 
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            {isDarkMode ? '☀️' : '🌙'}
           </button>
         </div>
       </div>
@@ -54,7 +88,7 @@ function DashboardHeader({ username, search, setSearch, statusFilter, setStatusF
         </div>
       </div>
 
-      {/* Search & Filter Section */}
+      {/* Search & Filter Section - Filter icon removed */}
       <div className="search-filter-section">
         <div className="search-wrapper">
           <svg className="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,9 +100,10 @@ function DashboardHeader({ username, search, setSearch, statusFilter, setStatusF
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="search-input"
+            aria-label="Search tasks"
           />
           {search && (
-            <button className="clear-search" onClick={() => setSearch('')}>
+            <button className="clear-search" onClick={() => setSearch('')} aria-label="Clear search">
               <svg className="clear-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -77,13 +112,11 @@ function DashboardHeader({ username, search, setSearch, statusFilter, setStatusF
         </div>
 
         <div className="filter-wrapper">
-          <svg className="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="filter-select"
+            aria-label="Filter by status"
           >
             <option value="">All Statuses</option>
             <option value="To Do">📋 To Do</option>
@@ -102,17 +135,14 @@ function DashboardHeader({ username, search, setSearch, statusFilter, setStatusF
               <svg className="badge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Search: "{search}"
-              <button onClick={() => setSearch('')} className="badge-remove">×</button>
+              Search: "{search.length > 20 ? search.substring(0, 20) + '...' : search}"
+              <button onClick={() => setSearch('')} className="badge-remove" aria-label="Remove search filter">×</button>
             </span>
           )}
           {statusFilter && (
             <span className="filter-badge">
-              <svg className="badge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
               Status: {statusFilter}
-              <button onClick={() => setStatusFilter('')} className="badge-remove">×</button>
+              <button onClick={() => setStatusFilter('')} className="badge-remove" aria-label="Remove status filter">×</button>
             </span>
           )}
           <button 
@@ -121,6 +151,7 @@ function DashboardHeader({ username, search, setSearch, statusFilter, setStatusF
               setSearch('');
               setStatusFilter('');
             }}
+            aria-label="Clear all filters"
           >
             Clear all
           </button>
