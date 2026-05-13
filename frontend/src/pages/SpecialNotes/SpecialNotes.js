@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getNotes, deleteNote } from '../../services/noteService';
-import { getTasks } from '../../services/taskService';
+import { getTasksByUser } from '../../services/taskService';
 import './SpecialNotes.css';
 
 function SpecialNotes() {
@@ -20,7 +20,7 @@ function SpecialNotes() {
       
       const [notesData, tasksData] = await Promise.all([
         getNotes(userId || 1),
-        getTasks()
+        userId ? getTasksByUser(userId) : []
       ]);
       
       setNotes(notesData);

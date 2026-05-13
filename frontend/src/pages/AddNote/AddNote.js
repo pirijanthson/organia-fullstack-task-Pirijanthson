@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { createNote, updateNote } from '../../services/noteService';
-import { getTasks } from '../../services/taskService';
+import { getTasksByUser } from '../../services/taskService';
 import './AddNote.css';
 
 function AddNote() {
@@ -26,7 +26,8 @@ function AddNote() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const data = await getTasks();
+        const userId = localStorage.getItem('userId');
+        const data = userId ? await getTasksByUser(userId) : [];
         setTasks(data);
       } catch (err) {
         console.error('Error fetching tasks:', err);

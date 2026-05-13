@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getTasks, deleteTask } from "../../services/taskService";
+import { getTasks, getTasksByUser, deleteTask } from "../../services/taskService";
 import DashboardHeader from "../../components/Dashboard/DashboardHeader/DashboardHeader";
 import MetricsGrid from "../../components/Dashboard/MetricsGrid/MetricsGrid";
 import TaskListItem from "../../components/Dashboard/TaskListItem/TaskListItem";
@@ -21,7 +21,8 @@ function Dashboard() {
   const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getTasks();
+      const userId = localStorage.getItem("userId");
+      const data = userId ? await getTasksByUser(userId) : await getTasks();
       setTasks(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching tasks:", error);

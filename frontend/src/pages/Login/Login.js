@@ -41,10 +41,13 @@ function Login() {
         password,
       });
 
-      const { token, username } = response.data;
+      const { token, username, userId } = response.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("username", username);
+      if (userId !== undefined && userId !== null) {
+        localStorage.setItem("userId", userId);
+      }
 
       // Handle remember me
       if (rememberMe) {

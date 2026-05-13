@@ -10,6 +10,16 @@ export const getTasks = async () => {
   }
 };
 
+export const getTasksByUser = async (userId) => {
+  try {
+    const response = await Api.get(`/tasks/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user tasks:", error);
+    throw error;
+  }
+};
+
 export const createTask = async (taskData) => {
   try {
     const response = await Api.post("/tasks", taskData);
